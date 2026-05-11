@@ -111,7 +111,7 @@ def write_gexf_for_viz(ml_graph: MultilevelGraph, file_path: str, description: s
     for key, edge in [key_edge for i in range(ml_graph.height()+1)
                       for key_edge in ml_graph.get_graph(i, deepcopy=False).E.items()]:
         superedge_attr = edge.attr
-        if edge.level:
+        if edge.level is not None:
             superedge_attr |= {'level': edge.level}
         writer.add_edge(str(key), str(edge.tail.key), str(edge.head.key),
                         color=edge_color_func(edge),
@@ -128,18 +128,18 @@ def _add_node_and_children(writer: 'GEXFWriter', supernode: Supernode,
 
     # Gather supernode attributes
     supernode_attr = supernode.attr
-    if supernode.level:
+    if supernode.level is not None:
         supernode_attr |= {'level': supernode.level}
-    if supernode.supernode:
+    if supernode.supernode is not None:
         supernode_attr |= {'supernode': supernode.supernode}
-    if supernode.component_sets:
+    if supernode.component_sets is not None:
         supernode_attr |= {'component_sets': supernode.component_sets}
 
     # Add supernode
     node_element = writer.add_node(node_id=str(supernode.key),
-                                   label=node_label_func(supernode) if node_label_func else None,
-                                   color=node_color_func(supernode) if node_color_func else None,
-                                   size=node_size_func(supernode) if node_size_func else None,
+                                   label=node_label_func(supernode) if node_label_func is not None else None,
+                                   color=node_color_func(supernode) if node_color_func is not None else None,
+                                   size=node_size_func(supernode) if node_size_func is not None else None,
                                    parent=supernode_element,
                                    attributes=supernode_attr)
 
@@ -151,7 +151,7 @@ def _add_node_and_children(writer: 'GEXFWriter', supernode: Supernode,
         if node_label_func is not None:
             # Edges between children and supernode have their color set to the child color and are made semi-transparent
             # in the visualization to distinguish them from the edges between supernodes of the same level
-            edge_color = _default_node_color_func(child)
+            edge_color = node_color_func(child)
             edge_color = (edge_color[0], edge_color[1], edge_color[2], "0.3")
             writer.add_edge(edge_id="(" + child.key + ", " + supernode.key + ")",
                             source_id=str(child.key),
@@ -267,7 +267,7 @@ class GEXFWriter:
 
         # Add node to the graph or to the parent node nodes
         if parent is not None:
-            if not parent.find('nodes'):
+            if parent.find('nodes') is None:
                 ET.SubElement(parent, 'nodes')
             parent.find('nodes').append(node)
         else:

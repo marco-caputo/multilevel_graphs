@@ -595,7 +595,12 @@ class Supernode:
         return str(self)
 
     def __getitem__(self, key: str) -> Any:
-        return self.attr[key]
+        try:
+            return self.attr[key]
+        except KeyError:
+            classname = type(self).__name__
+            msg = f'{classname!r} object has no attribute {item!r}'
+            raise AttributeError(msg)
 
     def __setitem__(self, key: str, value: Any):
         self.attr[key] = value
@@ -772,7 +777,12 @@ class Superedge:
         return str(self)
 
     def __getitem__(self, key: str) -> Any:
-        return self.attr[key]
+        try:
+            return self.attr[key]
+        except KeyError:
+            classname = type(self).__name__
+            msg = f'{classname!r} object has no attribute {item!r}'
+            raise AttributeError(msg)
 
     def __setitem__(self, key: str, value: Any):
         self.attr[key] = value
